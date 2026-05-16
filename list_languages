@@ -1,0 +1,101 @@
+# *** LEVEL 3 - EXTEND PROCESSTB *** #
+# The "ProcessMemoqTerminology" class we wrote in level 2 can already help us to process terminology data
+# But with the tools we have now we can do even more!
+# Unfortunately translation tools don't care about us trying to process their data
+# Therefore most of the things we would attempt are actually quite difficult
+
+import os
+import pandas as pd
+
+class ProcessMemoqTerminology:
+    def __init__(self, file_paths):
+        self.file_paths = file_paths
+        self.terminology_merged = None
+    def check_file(self):
+        self.file_paths = os.path.splitext(self.file_paths)
+        if self.file_paths[-1] != ".xlsx" and self.file_paths[-1] != ".csv":
+            print("Error: File needs to be a .xlsx or .csv")
+    def import_xlsx(self):
+        self.files_split = os.path.splitext(self.file_paths)
+        if self.files_split[-1] == ".xlsx":
+            return pd.read_excel(self.file_paths)
+    def import_csv(self):
+        self.files_split = os.path.splitext(self.file_paths)
+        if self.files_split[-1] == ".csv":
+            return pd.read_csv(self.file_paths)
+    def merge_terminology(self):
+        self.files_split = os.path.splitext(self.file_paths)
+        if self.files_split[-1] == ".xlsx":
+            item = self.import_xlsx()
+        elif self.files_split[-1] == ".csv":
+            item = self.import_csv()
+        self.terminology_merged = pd.concat([item])
+    def export_merged_terminology_as_xlsx(self):
+        if self.terminology_merged() is None:
+            self.merge_terminology()
+        self.terminology_merged.to_excel("sample_files/tb_merged.xlsx", index=False)
+
+# TASK 1
+# Use the import statement to import the class "ProcessMemoqTerminology" you wrote in level 2
+# Use the "os.walk" method to find all xlsx and csv files in the "sample_files" directory
+# Obtain the absolute path of each file and save them to a list "tb_files"
+# Then create an object "memoq_terminology" from your "TerminologyMemoq" class
+# Pass "tb_files" to it as a parameter
+
+tb_files = []
+memoq_terminology = None
+
+for root, dirs, files in os.walk("sample_files"):
+    for file in files:
+        if file.startswith("~$") or file.startswith("$") or file == "tb_merged.xlsx":
+            continue
+
+        if file.endswith(".xlsx") or file.endswith(".csv"):
+            absolute_path = os.path.abspath(os.path.join(root, file))
+            tb_files.append(absolute_path)
+
+memoq_terminology = ProcessMemoqTerminology(tb_files)
+
+
+
+# TASK 2
+# Call the method "merge_terminology" on your "memoq_terminology" object
+# Then access the "terminology_merged" variable in your "memoq_terminology" object
+# Save it to a new "terminology" variable
+
+memoq_terminology.merge_terminology()
+
+terminology = memoq_terminology.terminology_merged if memoq_terminology is not None else []
+
+
+# TASK 3
+# Write a function "list_languages"
+# The function should take one argument "term_df" which should be a pandas data frame
+# It should then get the column names in "term_df"
+# When it has obtained them all, it should only return the language codes from that list
+# Make sure that this works for ANY amount and combination of languages
+# Be careful: pandas does not allow duplicate column names on file import and you'll have to take this into account!
+
+# Because of the way MemoQ terminology data is structured this task is deceptively difficult!
+# There are multiple ways to go about this and all are valid if they yield the desired results
+# Some of them might require a bit of research regarding the capabilities of pandas
+# It might help you to think about how the terminology data is structured and what patterns you can isolate
+
+
+
+# TASK 4
+# Change your function "list_languages" such that it can be added to your "ProcessMemoqTerminolgy" class
+# You can then once more commit and push your changes and save them to your GitHub Repository!
+
+languages = memoq_terminology.list_languages(terminology)
+
+print("Files found:")
+print(tb_files)
+
+print("\nMerged terminology:")
+print(terminology)
+
+print("\nLanguages found:")
+print(languages)
+
+memoq_terminology.export_merged_terminology_as_xlsx()
